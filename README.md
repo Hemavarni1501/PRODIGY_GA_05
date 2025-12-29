@@ -1,7 +1,7 @@
 # GA_05: High-Resolution Neural Style Transfer System
 
 ## 🔗 Project Links
-* **Live Application:** [Neural Style Transfer Engine](https://appigyga05-78appbt6xwhachzeevuwdhw.streamlit.app/)
+* **Live Application:** [Neural Style Transfer Engine](https://appigyga05-m4b7aaptzpqmur56vphn4j.streamlit.app/)
 
 ---
 
