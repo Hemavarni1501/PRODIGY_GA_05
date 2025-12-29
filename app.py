@@ -47,24 +47,36 @@ content_strength = st.sidebar.slider("Face Preservation", 0.0, 1.0, 0.2)
 if content_file and style_file:
     if st.button("GENERATE MASTERPIECE"):
         with st.spinner("Executing Neural Synthesis..."):
-            # Load images
+            # 1. Load images
             content_image = load_img(content_file)
             style_image = load_img(style_file)
             
-            # Resize style image to the prediction size for better texture extraction
-            style_image_resized = tf.image.resize(style_image, (style_prediction_size, style_prediction_size))
+            # 2. Extract original content shape for final blending
+            # content_image shape is [1, height, width, 3]
+            target_height = content_image.shape[1]
+            target_width = content_image.shape[2]
 
-            # Run Style Transfer
+            # 3. Resize style image for the model (recommended size is 256)
+            style_image_resized = tf.image.resize(style_image, (256, 256))
+
+            # 4. Run Style Transfer
             outputs = hub_model(tf.constant(content_image), tf.constant(style_image_resized))
-            stylized_image = outputs[0]
+            stylized_output = outputs[0]
 
-            # Blend back some content to keep faces looking good (Alpha Blending)
+            # 5. FIX: Resize stylized output to match original content image shape
+            # This prevents the "InvalidArgumentError" during blending
+            stylized_output_resized = tf.image.resize(stylized_output, (target_height, target_width))
+
+            # 6. Blend based on Face Preservation slider
             if content_strength > 0:
-                stylized_image = (content_strength * content_image) + ((1 - content_strength) * stylized_image)
+                # Both tensors are now [1, target_height, target_width, 3]
+                final_tensor = (content_strength * content_image) + ((1 - content_strength) * stylized_output_resized)
+            else:
+                final_tensor = stylized_output_resized
 
-            final_img = tensor_to_image(stylized_image)
+            final_img = tensor_to_image(final_tensor)
 
-            # Show Result
+            # 7. Show Result
             st.markdown("---")
             st.image(final_img, caption="Professional Stylized Output", use_container_width=True)
             
